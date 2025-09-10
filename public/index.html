@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laundry Booking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .auth-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #545b62;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .calendar-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .time-slot {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            cursor: pointer;
+            background: #e9ecef;
+        }
+
+        .time-slot.available {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .time-slot.booked {
+            background: #f8d7da;
+            border-color: #dc3545;
+            cursor: not-allowed;
+        }
+
+        .time-slot.selected {
+            background: #b3d4fc;
+            border-color: #007bff;
+        }
+
+        .bookings-list {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .booking-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #e9ecef;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom: 1px solid white;
+        }
+
+        .tab-content {
+            background: white;
+            padding: 20px;
+            border-radius: 0 8px 8px 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .alert {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .user-info {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧺 Laundry Booking System</h1>
+            <p>Book your washing machine time slots</p>
+        </div>
+
+        <!-- Authentication Section -->
+        <div id="auth-section" class="auth-section">
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('login')">Login</div>
+                <div class="tab" onclick="showTab('register')">Register</div>
+            </div>
+
+            <div id="login-tab" class="tab-content">
+                <h2>Login</h2>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Username:</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password:</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <button type="submit">Login</button>
+                </form>
+            </div>
+
+            <div id="register-tab" class="tab-content hidden">
+                <h2>Register</h2>
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">Username:</label>
+                        <input type="text" id="register-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email:</label>
+                        <input type="email" id="register-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password:</label>
+                        <input type="password" id="register-password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="security-answer">Security Question: What is the street number of our building multiplied by the number of floors (including roof)?</label>
+                        <input type="number" id="security-answer" required placeholder="Enter the answer to prove you're from our community">
+                    </div>
+                    <button type="submit">Register</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Application -->
+        <div id="main-content" class="main-content">
+            <div class="user-info">
+                <span id="welcome-text">Welcome, User!</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" onclick="showMainTab('booking')">Book Time</div>
+                <div class="tab" onclick="showMainTab('my-bookings')">My Bookings</div>
+                <div class="tab" onclick="showMainTab('overtime')">Report Overtime</div>
+            </div>
+
+            <!-- Booking Tab -->
+            <div id="booking-tab" class="tab-content">
+                <h2>Book Washing Machine</h2>
+                <div class="form-group">
+                    <label for="booking-date">Select Date:</label>
+                    <input type="date" id="booking-date" min="" onchange="loadAvailability()">
+                </div>
+                
+                <div id="time-slots-container" class="hidden">
+                    <h3>Available Time Slots (15-minute intervals)</h3>
+                    <div class="form-group">
+                        <label for="duration">Duration (minutes):</label>
+                        <select id="duration">
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60" selected>1 hour</option>
+                            <option value="90">1.5 hours</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                    <div id="time-slots" class="time-slots"></div>
+                    <button id="book-btn" class="hidden" onclick="makeBooking()">Book Selected Slot</button>
+                </div>
+            </div>
+
+            <!-- My Bookings Tab -->
+            <div id="my-bookings-tab" class="tab-content hidden">
+                <h2>My Bookings</h2>
+                <div id="my-bookings-list" class="bookings-list">
+                    <p>Loading your bookings...</p>
+                </div>
+            </div>
+
+            <!-- Overtime Tab -->
+            <div id="overtime-tab" class="tab-content hidden">
+                <h2>Report Overtime</h2>
+                <form id="overtime-form">
+                    <div class="form-group">
+                        <label for="overtime-booking">Select Booking:</label>
+                        <select id="overtime-booking" required>
+                            <option value="">Choose a booking...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="overtime-minutes">Overtime Duration (minutes):</label>
+                        <input type="number" id="overtime-minutes" min="1" required>
+                    </div>
+                    <button type="submit">Report Overtime</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="alerts"></div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let selectedTimeSlot = null;
+        let availableSlots = [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set minimum date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('booking-date').min = today;
+            document.getElementById('booking-date').value = today;
+
+            // Check if user is already logged in
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                showMainContent();
+                loadMyBookings();
+                loadOvertimeBookings();
+            }
+        });
+
+        function showAlert(message, type = 'success') {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alertsContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+        }
+
+        function showMainTab(tabName) {
+            document.querySelectorAll('#main-content .tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('#main-content .tab-content').forEach(content => content.classList.add('hidden'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+
+            if (tabName === 'my-bookings') {
+                loadMyBookings();
+            } else if (tabName === 'overtime') {
+                loadOvertimeBookings();
+            }
+        }
+
+        // Authentication functions
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('authToken', data.token);
+                    currentUser = data.user;
+                    showMainContent();
+                    showAlert('Login successful!');
+                    loadMyBookings();
+                    loadOvertimeBookings();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Login failed. Please try again.', 'error');
+            }
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const securityAnswer = document.getElementById('security-answer').value;
+
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password, securityAnswer })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Registration successful! Please login.');
+                    showTab('login');
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Registration failed. Please try again.', 'error');
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            currentUser = null;
+            document.getElementById('auth-section').style.display = 'block';
+            document.getElementById('main-content').style.display = 'none';
+            showAlert('Logged out successfully!');
+        }
+
+        function showMainContent() {
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('main-content').style.display = 'block';
+            document.getElementById('welcome-text').textContent = `Welcome, ${currentUser?.username || 'User'}!`;
+        }
+
+        // Booking functions
+        async function loadAvailability() {
+            const date = document.getElementById('booking-date').value;
+            if (!date) return;
+
+            try {
+                const response = await fetch(`/api/availability/${date}`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    availableSlots = data.availableSlots;
+                    displayTimeSlots(data.availableSlots, data.bookedSlots);
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to load availability', 'error');
+            }
+        }
+
+        function displayTimeSlots(available, booked) {
+            const container = document.getElementById('time-slots');
+            const slotsContainer = document.getElementById('time-slots-container');
+            
+            container.innerHTML = '';
+            slotsContainer.classList.remove('hidden');
+
+            // Generate time slots for entire day (00:00 to 23:45)
+            for (let hour = 0; hour < 24; hour++) {
+                for (let minute = 0; minute < 60; minute += 15) {
+                    const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const slot = document.createElement('div');
+                    slot.className = 'time-slot';
+                    slot.textContent = time;
+                    slot.onclick = () => selectTimeSlot(time, slot);
+
+                    if (available.includes(time)) {
+                        slot.classList.add('available');
+                    } else {
+                        slot.classList.add('booked');
+                        slot.onclick = null;
+                    }
+
+                    container.appendChild(slot);
+                }
+            }
+        }
+
+        function selectTimeSlot(time, element) {
+            // Remove previous selection
+            document.querySelectorAll('.time-slot.selected').forEach(slot => {
+                slot.classList.remove('selected');
+            });
+
+            // Select new slot
+            element.classList.add('selected');
+            selectedTimeSlot = time;
+            document.getElementById('book-btn').classList.remove('hidden');
+        }
+
+        async function makeBooking() {
+            if (!selectedTimeSlot) {
+                showAlert('Please select a time slot', 'error');
+                return;
+            }
+
+            const date = document.getElementById('booking-date').value;
+            const duration = parseInt(document.getElementById('duration').value);
+
+            try {
+                const response = await fetch('/api/bookings', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ date, startTime: selectedTimeSlot, duration })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert('Booking created successfully!');
+                    loadAvailability(); // Refresh availability
+                    loadMyBookings(); // Refresh bookings list
+                    selectedTimeSlot = null;
+                    document.getElementById('book-btn').classList.add('hidden');
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Booking failed. Please try again.', 'error');
+            }
+        }
+
+        async function loadMyBookings() {
+            try {
+                const response = await fetch('/api/my-bookings', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                });
+
+                const bookings = await response.json();
+                
+                if (response.ok) {
+                    displayBookings(bookings, 'my-bookings-list');
+                } else {
+                    showAlert('Failed to load bookings', 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to load bookings', 'error');
+            }
+        }
+
+        function displayBookings(bookings, containerId) {
+            const container = document.getElementById(containerId);
+            
+            if (bookings.length === 0) {
+                container.innerHTML = '<p>No bookings found.</p>';
+                return;
+            }
+
+            container.innerHTML = bookings.map(booking => {
+                const startTime = new Date(booking.start_time);
+                const endTime = new Date(booking.end_time);
+                
+                return `
+                    <div class="booking-item">
+                        <strong>Date:</strong> ${startTime.toLocaleDateString()}<br>
+                        <strong>Time:</strong> ${startTime.toLocaleTimeString()} - ${endTime.toLocaleTimeString()}<br>
+                        <strong>Duration:</strong> ${Math.round((endTime - startTime) / (1000 * 60))} minutes
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadOvertimeBookings() {
+            try {
+                const response = await fetch('/api/all-bookings', {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                });
+
+                const bookings = await response.json();
+                
+                if (response.ok) {
+                    const select = document.getElementById('overtime-booking');
+                    select.innerHTML = '<option value="">Choose a booking...</option>';
+                    
+                    const now = new Date();
+                    const relevantBookings = bookings.filter(booking => {
+                        const endTime = new Date(booking.end_time);
+                        return endTime <= now; // Only past bookings
+                    });
+
+                    relevantBookings.forEach(booking => {
+                        const startTime = new Date(booking.start_time);
+                        const endTime = new Date(booking.end_time);
+                        const option = document.createElement('option');
+                        option.value = booking.id;
+                        option.textContent = `${booking.username} - ${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString()} to ${endTime.toLocaleTimeString()}`;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                showAlert('Failed to load bookings for overtime report', 'error');
+            }
+        }
+
+        document.getElementById('overtime-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const bookingId = document.getElementById('overtime-booking').value;
+            const overtimeMinutes = parseInt(document.getElementById('overtime-minutes').value);
+
+            try {
+                const response = await fetch('/api/report-overtime', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({ bookingId, overtimeMinutes })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showAlert(`Overtime reported successfully! ${data.nextUserNotified ? 'Next user has been notified.' : ''}`);
+                    document.getElementById('overtime-form').reset();
+                } else {
+                    showAlert(data.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Failed to report overtime', 'error');
+            }
+        });
+
+        // Load availability for today on page load
+        window.addEventListener('load', function() {
+            if (localStorage.getItem('authToken')) {
+                loadAvailability();
+            }
+        });
+    </script>
+</body>
+</html>
